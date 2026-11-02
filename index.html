@@ -731,6 +731,7 @@ body.dragging .sellbar{display:grid}
 .dstar{bottom:0;padding:3px 0 4px;font-size:14px;background:linear-gradient(transparent,rgba(0,0,0,.55) 40%)}
 .cart .pt.cut{padding:6% 6% 10%}
 .gallery .pt.cut{padding:8% 8% 32%}
+.tag.retrained{background:rgba(255,170,70,.18);color:#ffcf8a;border:1px solid rgba(255,170,70,.45)}
 </style>
 
 <canvas id="motes" aria-hidden="true"></canvas>
@@ -2840,7 +2841,7 @@ function renderInfo(){
     }else{
       const u=x.u,h=HERO[u.hero],j=JOBS[u.job];
       box.innerHTML=`${SHEETX}<h2><span class="gold">Scouting Report</span></h2>
-        ${dheroHTML(u,G.enemy.name,`<span class="tag">${ORIGINS[h.origin].name}</span><span class="tag">${j.name}</span>`,true)}
+        ${dheroHTML(u,G.enemy.name,`<span class="tag">${ORIGINS[h.origin].name}</span><span class="tag">${j.name}</span>${u.job!==h.job?`<span class="tag retrained">Retrained · normally ${JOBS[h.job].name}</span>`:''}`,true)}
         ${statBlock(unitStats(u.hero,u.job,u.star))}<div class="ability"><div class="an"><svg viewBox="0 0 24 24">${GLYPH[u.job]}</svg>${j.spell}<em>${j.mana} MANA</em></div><p>${j.spellDesc}</p></div>
         ${(u.items||[]).map(k=>`<div class="iteminfo">${itemIcon(k)}<div><b>${itemOf(k).name}</b><span>${itemDesc(k)}</span></div></div>`).join('')}`;
     }
@@ -2858,7 +2859,7 @@ function renderInfo(){
   const rejob=Object.keys(JOBS).filter(k=>k!==u.job&&G.crystals[k]>0)
     .map(k=>`<button class="btn small" data-job="${k}" ${canEdit?'':'disabled'}>Make ${JOBS[k].name}</button>`).join('');
   box.innerHTML=`${SHEETX}<h2><span class="gold">Field Notes</span></h2>
-    ${dheroHTML(u,h.title,`<span class="tag">${ORIGINS[h.origin].name}</span><span class="tag">${j.name}${u.job!==h.job?' (charm)':''}</span><span class="tag">Cost ${h.cost}</span>`)}
+    ${dheroHTML(u,h.title,`<span class="tag">${ORIGINS[h.origin].name}</span><span class="tag">${j.name}</span><span class="tag">Cost ${h.cost}</span>${u.job!==h.job?`<span class="tag retrained">Retrained · normally ${JOBS[h.job].name}</span>`:''}`)}
     <p class="quote">${h.title}. ${h.quote}</p>
     <p class="bondline evoline">Evolution: ${h.evo.map((n,i)=>i+1===u.star?`<b>${n}</b>`:n).join(' → ')}</p>
     ${statBlock(unitStats(u.hero,u.job,u.star))}
