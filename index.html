@@ -695,6 +695,7 @@ body.dragging .sellbar{display:grid}
   .btn.od.ready,.tok .spr,.heart{animation:none}
   .ftxt{animation-duration:.6s}
 }
+.was{font-weight:400;font-size:.82em;opacity:.7;font-family:var(--body);letter-spacing:0;text-transform:none;font-variant:normal}
 </style>
 
 <canvas id="motes" aria-hidden="true"></canvas>
@@ -840,6 +841,10 @@ const HEROES=[
 ].map(h=>({...h,name:h.evo[0]}));
 const HERO=Object.fromEntries(HEROES.map(h=>[h.id,h]));
 const evoName=u=>HERO[u.hero].evo[u.star-1];
+// bonds follow evolutions: show the highest form you own, with its young name alongside so it still matches the shop
+const ownedStar=id=>G?Math.max(0,...allUnits().filter(x=>x.u.hero===id).map(x=>x.u.star)):0;
+const formName=(id,html=true)=>{const st=ownedStar(id),h=HERO[id];if(st<2)return h.name;return html?`${h.evo[st-1]} <small class="was">(${h.name})</small>`:h.evo[st-1]};
+const evoLine=id=>HERO[id].evo.join(' → ');
 const BONDS=[
   {a:'griffling',b:'ashcub',name:'Storm and Smoke',why:'A gryphon and a manticore who fight over every kill, and share every victory.'},
   {a:'cinderwhelp',b:'wispkit',name:'Twin Lanterns',why:'A hellhound and a fox spirit who light the dark roads together.'},
@@ -2298,7 +2303,7 @@ function afterBattle(win,unlocked){
   rollShop();renderAll();
   toast(`+${inc} coins (5 base, ${interest} interest${streakB?`, ${streakB} streak`:''}${win?', 1 win':''})${patience?' · +1 Fate for patience':''}`);
   if(finished===MAX_ROUND&&!tower)setTimeout(()=>toast('Ruinmaw rises again. Win the rematch to end the run.'),2600);
-  if(unlocked.length)setTimeout(()=>cutin('Pack Bond Awakened',unlocked[0].name,`${HERO[unlocked[0].a].name} × ${HERO[unlocked[0].b].name} can now Link Attack`,'link',[unlocked[0].a,unlocked[0].b]),300);
+  if(unlocked.length)setTimeout(()=>cutin('Pack Bond Awakened',unlocked[0].name,`${formName(unlocked[0].a,false)} × ${formName(unlocked[0].b,false)} can now Link Attack`,'link',[unlocked[0].a,unlocked[0].b]),300);
   setTimeout(()=>{
     unlocked.forEach(b=>queue(d=>bondScene(b,d)));
     if(tower){
@@ -2695,7 +2700,7 @@ function renderInfo(){
     ${statBlock(unitStats(u.hero,u.job,u.star))}
     <div class="ability"><div class="an"><svg viewBox="0 0 24 24">${GLYPH[u.job]}</svg>${j.spell}<em>${j.mana} MANA</em></div><p>${j.spellDesc}</p></div>
     ${(u.items||[]).map(k=>`<div class="iteminfo">${itemIcon(k)}<div><b>${itemOf(k).name}</b><span>${itemDesc(k)}</span></div></div>`).join('')}
-    ${bonds.map(b=>`<p class="bondline">Pack bond with ${HERO[b.a===h.id?b.b:b.a].name}: ${b.name} ${hearts(G.affinity[b.key])}</p>`).join('')}
+    ${bonds.map(b=>`<p class="bondline">Pack bond with ${formName(b.a===h.id?b.b:b.a)}: ${b.name} ${hearts(G.affinity[b.key])}</p>`).join('')}
     <div class="actions">
       <button class="btn small" id="fieldbtn" ${canEdit?'':'disabled'}>${l.where==='board'?'Send to bench':'Field it'}</button>
       <button class="btn small" id="sellbtn" ${canEdit?'':'disabled'}>Sell for <span class="c">${sellValue(u)}</span></button>
@@ -2752,7 +2757,7 @@ function renderBonds(){
     if(ready)state=onBoard.has(b.a)&&onBoard.has(b.b)?'Link Attack armed':'Unlocked. Field both to use it.';
     else if(owned.has(b.a)&&owned.has(b.b))state='Place them next to each other';
     else state=`Tame ${!owned.has(b.a)?HERO[b.a].name:''}${!owned.has(b.a)&&!owned.has(b.b)?' and ':''}${!owned.has(b.b)?HERO[b.b].name:''}`;
-    return `<div class="bond ${ready?'ready':''}"><b>${HERO[b.a].name} × ${HERO[b.b].name} · ${b.name}</b>${hearts(n)}<span class="why">${state}</span></div>`;
+    return `<div class="bond ${ready?'ready':''}"><b>${formName(b.a)} × ${formName(b.b)} · ${b.name}</b>${hearts(n)}<span class="why">${state}</span></div>`;
   }).join('');
 }
 function renderControls(){
@@ -2955,7 +2960,7 @@ function openCodex(back,tab='beasts'){
   let body='';
   if(tab==='beasts')body=`<p>${seen(META.heroes)} of ${HEROES.length} tamed. Evolve a beast to reveal its next form.</p>
     <div class="gallery codexg">${HEROES.map(h=>{const k=META.heroes[h.id], top=META.evo[h.id]||1;return `<figure class="${k?'':'locked'}" style="--oc:${ORIGINS[h.origin].col};--od:${ORIGINS[h.origin].dark}">${artHTML(h.id,h.job,'full',k?top:1)}<figcaption>${k?h.evo[top-1]:'???'}<span>${k?`${ORIGINS[h.origin].name} · ${JOBS[h.job].name}<br>${h.evo.map((n,i)=>i<top?n:'???').join(' → ')}`:'Not tamed'}</span></figcaption></figure>`}).join('')}</div>`;
-  if(tab==='bonds')body=`<div class="clist">${BONDS.map(b=>`<div><span class="grow"><b>${b.name}</b>${HERO[b.a].name} × ${HERO[b.b].name}. ${b.why}</span></div>`).join('')}</div>`;
+  if(tab==='bonds')body=`<div class="clist">${BONDS.map(b=>`<div><span class="grow"><b>${b.name}</b>${evoLine(b.a)} × ${evoLine(b.b)}. ${b.why}</span></div>`).join('')}</div>`;
   if(tab==='boons')body=`<p>${seen(META.boons)} of ${Object.keys(BOONS).length} Boons taken.</p><div class="clist">${Object.entries(BOONS).map(([k,b])=>META.boons[k]
     ?`<div><svg viewBox="0 0 24 24">${BOON_ICO}</svg><span class="grow"><b>${b.name}</b>${b.desc}</span></div>`
     :`<div class="off"><svg viewBox="0 0 24 24">${BOON_ICO}</svg><span class="grow"><b>???</b>Take this Boon in a run to reveal it.</span></div>`).join('')}</div>`;
