@@ -1361,7 +1361,7 @@ function resetArt(id){delete CUSTOM_ART[id];saveArt();renderAll()}
 // everything is synthesised with Web Audio, so there are no sound files to load
 const AUD={ctx:null,master:null,mus:null,fx:null,nbuf:null,next:0,step:0,last:{}};
 META.sound=META.sound||'all';
-const MUSIC_VOL=0.22;
+const MUSIC_VOL=0.13;
 function audioInit(){
   if(AUD.ctx||META.sound==='off')return;
   const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
@@ -1435,57 +1435,77 @@ function sfx(k,arg){
   const now=AUD.ctx.currentTime;if(now-(AUD.last[k]||0)<(k==='hit'?0.05:0.03))return;
   AUD.last[k]=now;SFX[k](arg);
 }
-// The score: everything is synthesised, in D minor.
-//  plan  - a brooding bed: low strings, a ghostly choir, a tolling bell, slow war drums and the odd distant growl
-//  fight - a 132 bpm war theme: taiko in a 3-3-2 rhythm, a driving low-string ostinato, brass stabs
-//  boss  - boss fights and the Blood Moon Hunt: a darker progression, heavier drums, choir and cymbal swells
+// The score: orchestral metal, synthesised live, in drop D.
+//  plan  - a slow, crushing doom riff with half-time drums, choir and a tolling bell (84 bpm)
+//  fight - a galloping 152 bpm riff: palm-muted chugs, power-chord hits, double-kick bursts, brass stabs
+//  boss  - boss fights and the Blood Moon Hunt: a half-time breakdown, chugs locked to the kick, sub drops and choir
 const mtof=m=>440*2**((m-69)/12);
 const SCORE={
-  plan:{bpm:70,root:[38,34,31,33],ch:[[50,53,57],[50,53,58],[50,55,58],[49,52,57]]},
-  fight:{bpm:132,root:[38,34,36,33],ch:[[50,53,57],[50,53,58],[48,52,55],[49,52,57]]},
-  boss:{bpm:126,root:[38,39,34,33],ch:[[50,53,57],[51,55,58],[50,53,58],[49,52,57]]},
+  plan:{bpm:84,root:[38,46,43,45]},
+  fight:{bpm:152,root:[38,46,48,45]},
+  boss:{bpm:138,root:[38,39,46,45]},
 };
-// one voice of a synth: oscillators -> filter -> envelope -> music bus (+ reverb send)
-function mvoice(t,dur,{freqs,type='sawtooth',vol=.05,attack=.02,release=.3,cut=1200,q=.7,cutEnv=0,detune=0,verb=.5,lfo=0}){
+// one synth voice: oscillators -> filter -> envelope -> destination (+ reverb send)
+function mvoice(t,dur,{freqs,type='sawtooth',vol=.05,attack=.02,release=.3,cut=1200,q=.7,cutEnv=0,detune=0,verb=.5,dest}){
   const c=AUD.ctx,f=c.createBiquadFilter(),g=c.createGain();
   f.type='lowpass';f.Q.value=q;f.frequency.setValueAtTime(cut,t);
-  if(cutEnv){f.frequency.setValueAtTime(cut,t);f.frequency.linearRampToValueAtTime(cut+cutEnv,t+Math.min(.12,dur*.3));f.frequency.exponentialRampToValueAtTime(Math.max(80,cut*.7),t+dur)}
+  if(cutEnv){f.frequency.linearRampToValueAtTime(cut+cutEnv,t+Math.min(.12,dur*.3));f.frequency.exponentialRampToValueAtTime(Math.max(80,cut*.7),t+dur)}
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+attack);g.gain.setValueAtTime(vol,t+Math.max(attack,dur-release));g.gain.linearRampToValueAtTime(0,t+dur);
-  f.connect(g);g.connect(AUD.mbus);if(verb){const sg=c.createGain();sg.gain.value=verb;g.connect(sg);sg.connect(AUD.verb)}
-  freqs.forEach((fr,i)=>{const o=c.createOscillator();o.type=type;o.frequency.value=fr;o.detune.value=detune*(i%2?1:-1);
-    if(lfo){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=5.2;lg.gain.value=lfo;l.connect(lg);lg.connect(o.detune);l.start(t);l.stop(t+dur+.1)}
-    o.connect(f);o.start(t);o.stop(t+dur+.05)});
+  f.connect(g);g.connect(dest||AUD.mbus);if(verb){const sg=c.createGain();sg.gain.value=verb;g.connect(sg);sg.connect(AUD.verb)}
+  freqs.forEach((fr,i)=>{const o=c.createOscillator();o.type=type;o.frequency.value=fr;o.detune.value=detune*(i%2?1:-1);o.connect(f);o.start(t);o.stop(t+dur+.05)});
+}
+// the guitar rig, built once: everything played into it is driven hard through a waveshaper, then a speaker-cabinet EQ
+function guitarRig(){
+  if(AUD.gtr&&AUD.gtr.context===AUD.ctx.destination.context)return AUD.gtr;
+  const c=AUD.ctx,inp=c.createGain(),sh=c.createWaveShaper(),hp=c.createBiquadFilter(),mid=c.createBiquadFilter(),lp=c.createBiquadFilter(),out=c.createGain();
+  const k=70,n=2048,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1)*2-1;cv[i]=(1+k)*x/(1+k*Math.abs(x))}
+  sh.curve=cv;sh.oversample='4x';inp.gain.value=3.2;
+  hp.type='highpass';hp.frequency.value=75;mid.type='peaking';mid.frequency.value=650;mid.Q.value=.9;mid.gain.value=-3;lp.type='lowpass';lp.frequency.value=6000;lp.Q.value=.7;
+  const pres=c.createBiquadFilter();pres.type='peaking';pres.frequency.value=2600;pres.Q.value=1;pres.gain.value=5;
+  out.gain.value=.21;
+  inp.connect(sh);sh.connect(hp);hp.connect(mid);mid.connect(pres);pres.connect(lp);lp.connect(out);out.connect(AUD.mbus);
+  const sg=c.createGain();sg.gain.value=.12;out.connect(sg);sg.connect(AUD.verb);
+  // two slightly different takes, panned apart, make the wall of guitars
+  return AUD.gtr=inp;
 }
 const MI={
-  pad:(t,notes,dur,vol=.022)=>notes.forEach(m=>mvoice(t,dur,{freqs:[mtof(m),mtof(m)],detune:9,vol,attack:dur*.35,release:dur*.4,cut:900,verb:.7})),
+  // guitar: a palm-muted chug (mute) or a ringing power chord, root + fifth + octave
+  gtr:(t,m,dur,{mute=false,chord=true,vol=1}={})=>{
+    const c=AUD.ctx,rig=guitarRig(),f=c.createBiquadFilter(),g=c.createGain();
+    f.type='lowpass';f.frequency.value=mute?520:2600;f.Q.value=mute?1.4:.6;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5*vol,t+.004);
+    if(mute)g.gain.exponentialRampToValueAtTime(.01,t+Math.min(dur,.13));else{g.gain.setValueAtTime(.5*vol,t+dur*.7);g.gain.linearRampToValueAtTime(0,t+dur)}
+    f.connect(g);g.connect(rig);
+    const notes=chord&&!mute?[m,m+7,m+12]:chord?[m,m+7]:[m];
+    notes.forEach((nn,i)=>[-7,7].forEach(dt=>{const o=c.createOscillator();o.type='sawtooth';o.frequency.value=mtof(nn);o.detune.value=dt+i*2;o.connect(f);o.start(t);o.stop(t+dur+.05)}));
+  },
+  // bass guitar doubling the riff an octave down
+  bass:(t,m,dur,vol=.12)=>mvoice(t,dur,{freqs:[mtof(m-12),mtof(m-12)*1.003],type:'sawtooth',vol,attack:.004,release:Math.min(.08,dur*.5),cut:420,cutEnv:300,verb:0}),
+  kick:(t,vol=.9)=>{const c=AUD.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(42,t+.09);
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+.32);o.connect(g);g.connect(AUD.mbus);o.start(t);o.stop(t+.35);
+    noise(.018,{vol:vol*.55,at:t-c.currentTime,freq:4200,q:.6,dest:AUD.mbus})},
+  snare:(t,vol=.32)=>{const at=t-AUD.ctx.currentTime;noise(.22,{vol,at,freq:1900,q:.5,dest:AUD.mbus});noise(.3,{vol:vol*.5,at,freq:1900,q:.5,dest:AUD.verb});
+    mvoice(t,.11,{freqs:[200],type:'triangle',vol:vol*.7,attack:.002,release:.1,cut:3000,verb:.2})},
+  hat:(t,vol=.05)=>noise(.04,{vol:vol*1.6,at:t-AUD.ctx.currentTime,freq:7500,type:'highpass',dest:AUD.mbus}),
+  crash:(t,vol=.14)=>{const at=t-AUD.ctx.currentTime;noise(1.8,{vol,at,freq:6000,q:.3,type:'highpass',dest:AUD.mbus});noise(1.8,{vol:vol*.5,at,freq:6000,q:.3,type:'highpass',dest:AUD.verb})},
+  // a sub drop that you feel more than hear
+  sub:(t,vol=.5)=>{const c=AUD.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(28,t+1.4);
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+1.6);o.connect(g);g.connect(AUD.mbus);o.start(t);o.stop(t+1.7)},
+  brass:(t,m,dur,vol=.035)=>[m,m+7,m+12].forEach(nn=>mvoice(t,dur,{freqs:[mtof(nn),mtof(nn)],detune:7,vol,attack:.03,release:dur*.5,cut:450,cutEnv:2000,q:1.2,verb:.45})),
   // an "ah" choir: a buzzy source through vowel formants, with vibrato
-  choir:(t,m,dur,vol=.05)=>{const c=AUD.ctx,o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
+  choir:(t,notes,dur,vol=.04)=>notes.forEach(m=>{const c=AUD.ctx,o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
     o.type=o2.type='sawtooth';o.frequency.value=o2.frequency.value=mtof(m);o2.detune.value=12;l.frequency.value=5;lg.gain.value=14;l.connect(lg);lg.connect(o.detune);lg.connect(o2.detune);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+dur*.4);g.gain.linearRampToValueAtTime(0,t+dur);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+dur*.35);g.gain.linearRampToValueAtTime(0,t+dur);
     [[700,7,1],[1150,9,.6],[2600,12,.25]].forEach(([fr,q,amp])=>{const f=c.createBiquadFilter(),a=c.createGain();f.type='bandpass';f.frequency.value=fr;f.Q.value=q;a.gain.value=amp;o.connect(f);o2.connect(f);f.connect(a);a.connect(g)});
     g.connect(AUD.mbus);const sg=c.createGain();sg.gain.value=.9;g.connect(sg);sg.connect(AUD.verb);
-    [o,o2,l].forEach(x=>{x.start(t);x.stop(t+dur+.1)})},
-  str:(t,m,dur,vol=.05,acc=1)=>mvoice(t,dur,{freqs:[mtof(m),mtof(m)],detune:6,vol:vol*acc,attack:.008,release:dur*.6,cut:1300,cutEnv:900*acc,verb:.25}),
-  brass:(t,notes,dur,vol=.04)=>notes.forEach(m=>mvoice(t,dur,{freqs:[mtof(m),mtof(m)],detune:7,vol,attack:.03,release:dur*.5,cut:500,cutEnv:2200,q:1.2,verb:.45})),
-  // a deep drum: a pitched thump plus a low noise skin
-  taiko:(t,vol=.5,f0=110)=>{const c=AUD.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*.42,t+.35);
-    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+.6);o.connect(g);g.connect(AUD.mbus);const sg=c.createGain();sg.gain.value=.35;g.connect(sg);sg.connect(AUD.verb);o.start(t);o.stop(t+.65);
-    noise(.18,{vol:vol*.35,at:t-c.currentTime,freq:220,q:.7,type:'lowpass',dest:AUD.mbus})},
-  snare:(t,vol=.12)=>{noise(.16,{vol,at:t-AUD.ctx.currentTime,freq:1500,q:.6,dest:AUD.mbus});mvoice(t,.12,{freqs:[190],type:'triangle',vol:vol*.6,attack:.002,release:.1,cut:2000,verb:.3})},
-  // a tolling bell with inharmonic partials
+    [o,o2,l].forEach(x=>{x.start(t);x.stop(t+dur+.1)})}),
   bell:(t,m,vol=.05)=>[[1,1],[2.76,.45],[5.4,.22],[.5,.5]].forEach(([k,a])=>mvoice(t,3.5,{freqs:[mtof(m)*k],type:'sine',vol:vol*a,attack:.004,release:3.4,cut:6000,verb:.8})),
-  // a distant beast: filtered noise that swells and falls
-  growl:(t,vol=.09)=>{const c=AUD.ctx,src=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
-    if(!AUD.nbuf){const bb=AUD.nbuf=c.createBuffer(1,c.sampleRate,c.sampleRate),d=bb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
-    src.buffer=AUD.nbuf;src.loop=true;f.type='lowpass';f.Q.value=6;f.frequency.setValueAtTime(90,t);f.frequency.linearRampToValueAtTime(260,t+1);f.frequency.linearRampToValueAtTime(70,t+2.4);
-    l.frequency.value=23;lg.gain.value=vol*.5;l.connect(lg);lg.connect(g.gain);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.8);g.gain.linearRampToValueAtTime(0,t+2.4);
-    src.connect(f);f.connect(g);g.connect(AUD.mbus);const sg=c.createGain();sg.gain.value=.8;g.connect(sg);sg.connect(AUD.verb);
-    src.start(t);src.stop(t+2.5);l.start(t);l.stop(t+2.5)},
-  swell:(t,dur,vol=.08)=>{const c=AUD.ctx,src=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
-    src.buffer=AUD.nbuf;src.loop=true;f.type='highpass';f.frequency.value=5000;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+dur);g.gain.linearRampToValueAtTime(0,t+dur+.05);
-    src.connect(f);f.connect(g);g.connect(AUD.mbus);src.start(t);src.stop(t+dur+.1)},
-  crash:(t,vol=.1)=>{noise(1.6,{vol,at:t-AUD.ctx.currentTime,freq:6500,q:.3,type:'highpass',dest:AUD.mbus});noise(1.6,{vol:vol*.6,at:t-AUD.ctx.currentTime,freq:6500,q:.3,type:'highpass',dest:AUD.verb})},
+};
+// riffs, one character per sixteenth: P power chord, x palm-muted chug, - rest
+const RIFF={
+  plan:  'P---------------',
+  fight: ['P-x-xxx-P-x-xxx-','P-x-xxx-P-xx-xP-'],
+  boss:  ['P--x--x-x--x--x-','P--x--x-xP-xx-x-'],
 };
 function musicMood(){
   if(!G)return 'plan';
@@ -1499,34 +1519,43 @@ function musicTick(){
   const mood=musicMood();
   // a new mood starts cleanly on a downbeat
   if(mood!==AUD.mood){AUD.mood=mood;AUD.step=0;AUD.next=Math.max(AUD.next,c.currentTime+0.08)}
-  const sc=SCORE[mood], e8=60/sc.bpm/2;
+  const sc=SCORE[mood], s16=60/sc.bpm/4;
   if(AUD.next<c.currentTime)AUD.next=c.currentTime+0.05;
-  while(AUD.next<c.currentTime+0.35){
-    const st=AUD.step++, e=st%8, bar=Math.floor(st/8), i=bar%4, t=AUD.next, ch=sc.ch[i], rt=sc.root[i], barDur=e8*8;
+  while(AUD.next<c.currentTime+0.3){
+    const st=AUD.step++, e=st%16, bar=Math.floor(st/16), i=bar%4, t=AUD.next, rt=sc.root[i], barDur=s16*16;
     if(mood==='plan'){
-      if(e===0){MI.pad(t,ch,barDur*1.05);MI.str(t,rt,barDur,.07,.4);MI.str(t,rt+12,barDur,.035,.4);MI.taiko(t,.32,95)}
-      if(e===4)MI.taiko(t,.18,80);
-      if(e===0&&bar%2===0)MI.bell(t,rt+24,.045);
-      if(e===2&&bar%4===1)MI.choir(t,ch[2]+12,barDur*1.6,.045);
-      if(e===0&&bar%8===6)MI.growl(t+e8*3,.1);
+      // doom: one huge ringing chord per bar, half-time drums
+      if(e===0){MI.gtr(t,rt,barDur*.95,{vol:.9});MI.bass(t,rt,barDur*.9,.1);MI.kick(t,.75)}
+      if(e===10)MI.kick(t,.55);
+      if(e===8)MI.snare(t,.28);
+      if(e%4===0)MI.hat(t,.035);
+      if(e===0&&bar%4===0)MI.crash(t,.1);
+      if(e===0&&bar%2===1)MI.choir(t,[rt+12,rt+19],barDur*1.8,.03);
+      if(e===0&&bar%4===2)MI.bell(t,rt+24,.04);
+    }else if(mood==='fight'){
+      const r=RIFF.fight[bar%2][e];
+      if(r==='P'){MI.gtr(t,e===0?rt:38,s16*3.5);MI.bass(t,e===0?rt:38,s16*3)}
+      if(r==='x'){MI.gtr(t,38,s16,{mute:true});MI.bass(t,38,s16*.9,.09)}
+      // drums: kick on the eighths with a double-kick burst into the next bar, snare on 2 and 4
+      if(e%2===0||e>=13)MI.kick(t,e%4===0?.85:.65);
+      if(e===4||e===12)MI.snare(t);
+      if(e%2===0)MI.hat(t,e%4===0?.06:.04);
+      if(e===0&&i===0)MI.crash(t,.12);
+      if(e===0&&i%2===0)MI.brass(t,rt-12,barDur*.5,.028);
+      if(e===8&&i===3)MI.brass(t,rt-10,barDur*.4,.024);
     }else{
-      const boss=mood==='boss', acc=[1,0,0,1,0,0,1,0][e];
-      // drums: 3-3-2 taiko pattern, backbeat on the 5th eighth
-      if(acc)MI.taiko(t,boss?.55:.45,e===0?120:100);
-      if(e===4)MI.snare(t,boss?.14:.11);
-      if(boss&&e===7)MI.taiko(t,.3,90);
-      if(e%2===1)noise(.03,{vol:.025,at:t-c.currentTime,freq:8000,type:'highpass',dest:AUD.mbus});
-      // low strings drive every eighth, accenting the drum pattern
-      MI.str(t,rt+(e%2?12:0),e8*.9,.045,acc?1.4:.8);
-      // brass stabs on the accents, a held chord at the top of every second bar
-      if(acc&&e!==0)MI.brass(t,ch.map(m=>m-12),e8*1.4,boss?.03:.026);
-      if(e===0)MI.brass(t,ch.map(m=>m-12),bar%2===0?barDur*.45:e8*1.6,boss?.034:.03);
-      if(e===0)MI.pad(t,ch,barDur,.014);
-      if(boss){if(e===0&&i===0)MI.crash(t,.09);if(e===0&&i%2===0)MI.choir(t,ch[1]+12,barDur*1.9,.05);if(e===4&&i===3)MI.swell(t,barDur/2,.06)}
-      else if(e===4&&i===3)MI.swell(t,barDur/2,.045);
-      if(!boss&&e===0&&i===0&&bar%8===0)MI.crash(t,.06);
+      // boss breakdown: chugs locked to the kick, snare on 3, sub drops and choir over it
+      const r=RIFF.boss[bar%2][e];
+      if(r==='P'){MI.gtr(t,rt,s16*5,{vol:1.1});MI.bass(t,rt,s16*4.5,.13);MI.kick(t,1)}
+      if(r==='x'){MI.gtr(t,38,s16*1.2,{mute:true,vol:1.1});MI.bass(t,38,s16,.11);MI.kick(t,.85)}
+      if(e===8)MI.snare(t,.36);
+      if(e%4===0)MI.hat(t,.05);
+      if(e===0&&i===0){MI.crash(t,.14);MI.sub(t,.55)}
+      if(e===0&&i%2===0)MI.choir(t,[rt+12,rt+15,rt+19],barDur*1.9,.03);
+      if(e===0&&i===2)MI.brass(t,rt-12,barDur*.6,.03);
+      if(e===12&&i===3)MI.brass(t,rt-11,barDur*.25,.032);
     }
-    AUD.next+=e8;
+    AUD.next+=s16;
   }
 }
 
