@@ -696,6 +696,8 @@ body.dragging .sellbar{display:grid}
   .ftxt{animation-duration:.6s}
 }
 .was{font-weight:400;font-size:.82em;opacity:.7;font-family:var(--body);letter-spacing:0;text-transform:none;font-variant:normal}
+.evostars{font-style:normal;color:var(--gold);letter-spacing:-.05em;margin-left:2px}
+.sfig{background:radial-gradient(ellipse 60% 22% at 50% 86%,rgba(0,0,0,.55),transparent 70%),radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--oc) 34%,transparent),transparent 62%),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--od) 65%,#1a100b),#0c0907 85%)}
 </style>
 
 <canvas id="motes" aria-hidden="true"></canvas>
@@ -963,7 +965,6 @@ const FEST_GUILDS=['Bonepicker Pack','The Red Howl','Gravemaw Kennel','Marrow Br
 const roundBoss=r=>G.mode==='festival'?(BOSSES[r]&&{...BOSSES[r],name:FEST_BOSS[r][0],title:FEST_BOSS[r][1],tint:'sepia(.8) saturate(3.2) hue-rotate(-38deg) drop-shadow(0 0 12px rgba(255,30,30,.6))'}):G.mode==='tower'?(r%5===0?BOSSES[[5,10,15][(r/5-1)%3]]:null):BOSSES[r];
 const enemyMul=()=>(G.asc>=1?1.1:1)*(G.asc>=6?1.1:1)*(G.mode==='tower'?1+Math.max(0,G.round-12)*0.09:1);
 const roundLabel=()=>G.mode==='tower'?`Floor <b>${G.round}</b>`:`Round <b>${G.round}</b> of ${MAX_ROUND}${G.mode==='festival'?' · Blood Moon Hunt':G.mode==='daily'?' · Daily':G.asc?` · Ascension ${G.asc}`:''}`;
-const SCENES={};
 const hasBoon=k=>G.boons.includes(k);
 const fieldCap=()=>G.level+(hasBoon('banner')?1:0);
 const rerollCost=()=>G.freeRolls>0?0:(G.asc>=3?3:2);
@@ -1148,8 +1149,9 @@ const LOOK={
 const ART_FILES={};
 // painted art published next to the page, as "id-star" (art/<id>-<star>.jpg for cards, .webp cut-outs for the board)
 const ART_HAVE=new Set(["ashcub-1","ashcub-2","ashcub-3","barkcub-1","barkcub-2","barkcub-3","bossalpha-1","bossruin-1","bossthorn-1","briarchick-1","briarchick-2","briarchick-3","cinderbull-1","cinderbull-2","cinderbull-3","cinderwhelp-1","cinderwhelp-2","cinderwhelp-3","cragshell-1","cragshell-2","cragshell-3","flickerling-1","flickerling-2","flickerling-3","glimmeel-1","glimmeel-2","glimmeel-3","gloomwing-1","gloomwing-2","gloomwing-3","griffling-1","griffling-2","griffling-3","ironcalf-1","ironcalf-2","ironcalf-3","lumikirin-1","lumikirin-2","lumikirin-3","mossfawn-1","mossfawn-2","mossfawn-3","nightglare-1","nightglare-2","nightglare-3","pebblegarg-1","pebblegarg-2","pebblegarg-3","quartzfoal-1","quartzfoal-2","quartzfoal-3","quillhawk-1","quillhawk-2","quillhawk-3","rockling-1","rockling-2","rockling-3","rootling-1","rootling-2","rootling-3","salamite-1","salamite-2","salamite-3","shadefoal-1","shadefoal-2","shadefoal-3","shadeprowl-1","shadeprowl-2","shadeprowl-3","spinelet-1","spinelet-2","spinelet-3","sproutwolf-1","sproutwolf-2","sproutwolf-3","trillwing-1","trillwing-2","trillwing-3","vinesnake-1","vinesnake-2","vinesnake-3","voltdrake-1","voltdrake-2","voltdrake-3","voltgrub-1","voltgrub-2","voltgrub-3","wispkit-1","wispkit-2","wispkit-3","zephyrling-1","zephyrling-2","zephyrling-3"]);
-const CASUAL=new Set(), SCENE_ART=new Set(), COVER_ART=new Set(['festival']), CLIP_ART=new Set();
-const paint=(key,src,alt='')=>CLIP_ART.has(key)&&!fx.reduce?`<video src="art/clip-${key}.mp4" poster="${src}" autoplay muted loop playsinline aria-label="${alt}"></video>`:`<img src="${src}" alt="${alt}">`;
+// painted bond scenes, title and event covers; CLIP_ART lists the ones that also have an animated clip
+const CASUAL=new Set(), SCENE_ART=new Set(['griffling-ashcub','cinderwhelp-wispkit','gloomwing-shadeprowl','lumikirin-cragshell']), COVER_ART=new Set(['festival','title']), CLIP_ART=new Set(['scene-griffling-ashcub','scene-cinderwhelp-wispkit','scene-gloomwing-shadeprowl','scene-lumikirin-cragshell']);
+const paint=(key,src,alt='')=>CLIP_ART.has(key)&&!fx.reduce?`<video src="art/clip-${key}.mp4" poster="${src}" autoplay muted playsinline preload="auto" aria-label="${alt}"></video>`:`<img src="${src}" alt="${alt}">`;
 META.outfit=META.outfit||{};
 const BEACH=new Set(), OUTFITS={}, OUTFIT_NAME={classic:'Classic'};
 const outfitsOf=id=>['classic'];
@@ -2826,7 +2828,7 @@ function renderInfo(){
     ${statBlock(unitStats(u.hero,u.job,u.star))}
     <div class="ability"><div class="an"><svg viewBox="0 0 24 24">${GLYPH[u.job]}</svg>${j.spell}<em>${j.mana} MANA</em></div><p>${j.spellDesc}</p></div>
     ${(u.items||[]).map(k=>`<div class="iteminfo">${itemIcon(k)}<div><b>${itemOf(k).name}</b><span>${itemDesc(k)}</span></div></div>`).join('')}
-    ${bonds.map(b=>`<p class="bondline">Pack bond with ${formName(b.a===h.id?b.b:b.a)}: ${b.name} ${hearts(G.affinity[b.key])}</p>`).join('')}
+    ${bonds.map(b=>`<p class="bondline">Pack bond with ${formName(b.a===h.id?b.b:b.a,false)}: ${b.name} ${hearts(G.affinity[b.key])}</p>`).join('')}
     <div class="actions">
       <button class="btn small" id="fieldbtn" ${canEdit?'':'disabled'}>${l.where==='board'?'Send to bench':'Field it'}</button>
       <button class="btn small" id="sellbtn" ${canEdit?'':'disabled'}>Sell for <span class="c">${sellValue(u)}</span></button>
@@ -2881,9 +2883,9 @@ function renderBonds(){
     const n=G.affinity[b.key], ready=n>=3;
     let state;
     if(ready)state=onBoard.has(b.a)&&onBoard.has(b.b)?'Link Attack armed':'Unlocked. Field both to use it.';
-    else if(owned.has(b.a)&&owned.has(b.b))state='Place them next to each other';
-    else state=`Tame ${!owned.has(b.a)?HERO[b.a].name:''}${!owned.has(b.a)&&!owned.has(b.b)?' and ':''}${!owned.has(b.b)?HERO[b.b].name:''}`;
-    return `<div class="bond ${ready?'ready':''}"><b>${formName(b.a)} × ${formName(b.b)} · ${b.name}</b>${hearts(n)}<span class="why">${state}</span></div>`;
+    else if(owned.has(b.a)&&owned.has(b.b))state='Place side by side';
+    else state=owned.has(b.a)||owned.has(b.b)?'Tame its partner':'Tame both';
+    return `<div class="bond ${ready?'ready':''}" title="${HERO[b.a].name} × ${HERO[b.b].name}"><b>${b.name}</b>${hearts(n)}<span class="why">${formName(b.a,false)} × ${formName(b.b,false)} · ${state}</span></div>`;
   }).join('');
 }
 function renderControls(){
@@ -3085,8 +3087,8 @@ function openCodex(back,tab='beasts'){
   const seen=o=>Object.keys(o).length;
   let body='';
   if(tab==='beasts')body=`<p>${seen(META.heroes)} of ${HEROES.length} tamed. Evolve a beast to reveal its next form.</p>
-    <div class="gallery codexg">${HEROES.map(h=>{const k=META.heroes[h.id], top=META.evo[h.id]||1;return `<figure class="${k?'':'locked'}" style="--oc:${ORIGINS[h.origin].col};--od:${ORIGINS[h.origin].dark}">${artHTML(h.id,h.job,'full',k?top:1)}<figcaption>${k?h.evo[top-1]:'???'}<span>${k?`${ORIGINS[h.origin].name} · ${JOBS[h.job].name}<br>${h.evo.map((n,i)=>i<top?n:'???').join(' → ')}`:'Not tamed'}</span></figcaption></figure>`}).join('')}</div>`;
-  if(tab==='bonds')body=`<div class="clist">${BONDS.map(b=>`<div><span class="grow"><b>${b.name}</b>${evoLine(b.a)} × ${evoLine(b.b)}. ${b.why}</span></div>`).join('')}</div>`;
+    <div class="gallery codexg">${HEROES.map(h=>{const k=META.heroes[h.id], top=META.evo[h.id]||1;return `<figure class="${k?'':'locked'}" style="--oc:${ORIGINS[h.origin].col};--od:${ORIGINS[h.origin].dark}"${k?` title="${h.evo.map((n,i)=>i<top?n:'???').join(' → ')}"`:''}>${artHTML(h.id,h.job,'full',k?top:1)}<figcaption>${k?h.evo[top-1]:'???'}<span>${k?`${ORIGINS[h.origin].name} · ${JOBS[h.job].name} <i class="evostars">${'★'.repeat(top)}${'☆'.repeat(3-top)}</i>`:'Not tamed'}</span></figcaption></figure>`}).join('')}</div>`;
+  if(tab==='bonds')body=`<div class="clist">${BONDS.map(b=>`<div>${SCENE_ART.has(b.key)?`<img class="bimg" src="art/scene-${b.key}.jpg" alt="" style="object-fit:cover">`:''}<span class="grow"><b>${b.name}</b>${HERO[b.a].name} × ${HERO[b.b].name}. ${b.why}</span>${META.scenes&&META.scenes[b.key]?`<button class="btn small" data-act="scene:${b.key}">Watch</button>`:''}</div>`).join('')}</div>`;
   if(tab==='boons')body=`<p>${seen(META.boons)} of ${Object.keys(BOONS).length} Boons taken.</p><div class="clist">${Object.entries(BOONS).map(([k,b])=>META.boons[k]
     ?`<div><svg viewBox="0 0 24 24">${BOON_ICO}</svg><span class="grow"><b>${b.name}</b>${b.desc}</span></div>`
     :`<div class="off"><svg viewBox="0 0 24 24">${BOON_ICO}</svg><span class="grow"><b>???</b>Take this Boon in a run to reveal it.</span></div>`).join('')}</div>`;
@@ -3105,6 +3107,7 @@ function openCodex(back,tab='beasts'){
     ${body}<button class="btn" data-act="close">Back</button>`,
     act=>{
       if(act.startsWith('tab:'))return openCodex(back,act.slice(4));
+      if(act.startsWith('scene:')){const b=BONDS.find(x=>x.key===act.slice(6));if(b)return bondScene(b,()=>openCodex(back,'bonds'))}
       closeModal();if(back)back();
     },'codex');
 }
@@ -3125,7 +3128,40 @@ function openWardrobe(back){
     },'codex');
   $('#modal').scrollTop=st;
 }
-function bondScene(b,done){done&&done()}
+// narrated beats for each bond; 'a' or 'b' marks which partner the beat is about
+const SCENES={
+  'griffling-ashcub':[['a','The gryphon came down out of the storm to claim the kill.'],['b','The manticore was already there, mane blazing, daring it to try.'],['a','They fought until the lightning stopped. Then they shared the meal, and the next one, and every one after.']],
+  'cinderwhelp-wispkit':[['a','On the darkest road in the wilds, a hellhound walks with fire in its fur.'],['b','Beside it drifts a fox of pale spirit-flame, lighting the way the hound cannot see.'],['b','Travellers who meet them tell of two lanterns in the night, and no wolf dares come near.']],
+  'zephyrling-pebblegarg':[['a','Every gale ends at the same rooftop, where the wyvern folds its wings.'],['b','The gargoyle never moves. It never needs to. The wind always comes home.'],['a','When the gargoyle wakes to fight, the wyvern rides the tailwind it makes.']],
+  'gloomwing-shadeprowl':[['a','When the moon goes dark, the gloomwing takes the sky.'],['b','Below, the shadeprowl takes the ground, unseen and unheard.'],['a','By morning there is nothing left to hunt, and no one saw either of them.']],
+  'quartzfoal-voltgrub':[['b','The wurm tunnels through the mountain, cracking open veins of living crystal.'],['a','The unicorn follows, drinking the light that spills out.'],['a','Charged to bursting, its horn crackles like a storm, and the wurm hums along.']],
+  'lumikirin-cragshell':[['a','The kirin rules the highest peak, where the sun touches first.'],['b','The titan rules the deepest crater, where the lava never cools.'],['b','Two crowns, one wild. When they stand together, every beast between them kneels.']],
+  'quillhawk-nightglare':[['a','The quillhawk owns the day, its dart-feathers flashing in the sun.'],['b','The nightglare owns the dark, its starlit wings silent as frost.'],['a','At dusk they cross paths in the sky, and the whole wild holds its breath.']],
+  'voltdrake-ironcalf':[['a','The thunder dragon calls the storm.'],['b','Wherever the lightning falls, the bronze bull is already charging.'],['b','Nothing stands after the strike and the stampede land together.']],
+  'flickerling-glimmeel':[['a','At dawn the phoenix rises and sings the sun over the hills.'],['b','At dusk the leviathan rises from the lake and sings it down again.'],['a','Once a year they sing together, and the wild goes quiet to listen.']],
+  'cinderbull-rockling':[['a','The behemoth melts the mountain where it walks.'],['b','The titan follows, packing the cooling stone into new peaks.'],['a','Between them, the land is never finished, and never broken.']],
+  'quillhawk-trillwing':[['b','Every morning, the trillwing sings the roc awake.'],['a','Every morning, the roc pretends to be furious about it.'],['b','It has never once missed a sunrise.']],
+  'sproutwolf-mossfawn':[['a','The fenrir guards the forest edge with thorns for a mane.'],['b','The hart walks behind it, and wherever it steps, the wounded grass heals.'],['a','No pack in the wild is harder to break.']],
+  'barkcub-pebblegarg':[['a','The owlbear insists its bark is harder than stone.'],['b','The gargoyle insists otherwise, and has for three hundred years.'],['a','Anything that attacks them both settles the argument for them.']],
+  'ashcub-briarchick':[['a','The manticore circles from the left, smoke curling from its mane.'],['b','The cockatrice waits on the right, still as a briar.'],['b','Their prey only ever sees one of them.']],
+  'lumikirin-rootling':[['a','When the young kirin fell from the sky, it landed in the arms of an ancient tree.'],['b','The treant held it through a long winter until its halo glowed again.'],['a','Now the kirin wears a crown of leaves, and the old tree is never alone.']],
+};
+function bondScene(b,done){
+  const lines=SCENES[b.key];if(!lines){done&&done();return}
+  let i=0;META.scenes=META.scenes||{};
+  if(!META.scenes[b.key]){META.scenes[b.key]=1;saveMeta()}
+  const fig=(id,on)=>{const h=HERO[id];return `<div class="sfig${on?' on':''}" style="--oc:${ORIGINS[h.origin].col};--od:${ORIGINS[h.origin].dark}">${artHTML(id,h.job,'full',Math.max(1,ownedStar(id)))}</div>`};
+  const draw=()=>{
+    const [who,txt]=lines[i], sp=who==='a'?b.a:b.b, last=i===lines.length-1;
+    openModal(`<p class="kick">Pack bond awakened · ${b.name}</p>
+      ${SCENE_ART.has(b.key)?`<div class="scg">${paint('scene-'+b.key,`art/scene-${b.key}.jpg`,`${HERO[b.a].name} and ${HERO[b.b].name}`)}</div>`
+        :`<div class="scene">${fig(b.a,who==='a')}${fig(b.b,who==='b')}</div>`}
+      <div class="sline"><b>${formName(sp,false)}</b><p>${txt}</p></div>
+      <div class="row"><button class="btn${last?' go':''}" data-act="next">${last?'Continue':'Next'}</button></div>`,
+      act=>{if(act!=='next')return;if(!last){i++;draw()}else{closeModal();done&&done()}},'scenem');
+  };
+  draw();
+}
 const seenCount=o=>Object.keys(o).length;
 function gameOver(victory){
   G.phase='over';Q.length=0;QBUSY=false;
