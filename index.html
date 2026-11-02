@@ -698,6 +698,30 @@ body.dragging .sellbar{display:grid}
 .was{font-weight:400;font-size:.82em;opacity:.7;font-family:var(--body);letter-spacing:0;text-transform:none;font-variant:normal}
 .evostars{font-style:normal;color:var(--gold);letter-spacing:-.05em;margin-left:2px}
 .sfig{background:radial-gradient(ellipse 60% 22% at 50% 86%,rgba(0,0,0,.55),transparent 70%),radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--oc) 34%,transparent),transparent 62%),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--od) 65%,#1a100b),#0c0907 85%)}
+/* evolution guide */
+.mwin.evog{max-width:760px}
+.egrule{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.egrule b{color:var(--gold)}
+.elist{display:grid;gap:8px;max-height:min(62vh,640px);overflow:auto;padding-right:4px}
+.erow{padding:8px;border-radius:8px;background:rgba(0,0,0,.28);border:1px solid rgba(217,199,163,.15)}
+.erow.mine{border-color:rgba(233,170,80,.55);background:rgba(90,50,20,.25)}
+.eforms{display:grid;grid-template-columns:minmax(0,104px) auto minmax(0,104px) auto minmax(0,104px);justify-content:center;align-items:center;gap:6px 14px}
+.ef{text-align:center;min-width:0;opacity:.75}
+.ef.on{opacity:1}.ef.past{opacity:.55}
+.ef b{display:block;font-family:var(--display);font-size:12px;line-height:1.15;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ef span{display:block;font-size:11px;color:var(--gold)}
+.ef.on .efart{border-color:var(--gold);box-shadow:0 0 10px rgba(233,170,80,.5)}
+.efart{position:relative;aspect-ratio:1/1;border-radius:8px;overflow:hidden;border:1.5px solid rgba(217,199,163,.25);
+  background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--oc) 34%,transparent),transparent 62%),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--od) 65%,#1a100b),#0c0907 85%)}
+.efart .pt{position:absolute;inset:0;width:100%;height:100%}
+.efart .pt.cut{padding:6%}
+.earr{font-style:normal;font-size:11px;color:var(--muted);text-align:center;line-height:1.1}
+.emeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:6px 2px 0;font-size:11px;color:var(--muted)}
+.emeta em{font-style:normal;color:var(--hp);font-weight:700}
+.cnext{font-size:10px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.card.evolves{border-color:var(--hp);box-shadow:0 0 0 1px var(--hp),0 0 14px rgba(134,224,122,.55)}
+.cown.evo{animation:pulse 1s infinite;background:var(--hp)}
+@media (max-width:520px){.eforms{gap:4px 6px}.ef b{font-size:10px}.earr{font-size:9px}.cnext{font-size:8.5px}}
 </style>
 
 <canvas id="motes" aria-hidden="true"></canvas>
@@ -712,6 +736,7 @@ body.dragging .sellbar{display:grid}
       <div class="stat fate"><label>Fate</label><b id="fate">0</b></div>
       <div class="daynight" id="daynight"></div>
       <button class="btn small menubtn sndbtn" id="sndbtn"></button>
+      <button class="btn small menubtn" id="evobtn" title="How each beast evolves">Evolutions</button>
       <button class="btn small menubtn" id="menubtn">Menu</button>
     </div>
   </header>
@@ -2758,10 +2783,12 @@ function renderShop(){
     const b=document.createElement('button');
     b.className='card c'+h.cost+(G.gold<price(h)?' poor':'');b.disabled=G.phase!=='plan';
     b.style.setProperty('--oc',ORIGINS[h.origin].col);b.style.setProperty('--od',ORIGINS[h.origin].dark);
-    const owned=allUnits().filter(x=>x.u.hero===id&&x.u.star===1).length;
+    const owned=allUnits().filter(x=>x.u.hero===id&&x.u.star===1).length, two=allUnits().filter(x=>x.u.hero===id&&x.u.star===2).length;
+    const evolves=owned>=2, nextName=evolves&&two>=2?h.evo[2]:h.evo[1];
+    if(evolves)b.classList.add('evolves');
     b.innerHTML=`<span class="cart">${artHTML(id,h.job,'full')}</span><span class="ccost">${price(h)}</span><svg class="cjob" viewBox="0 0 24 24">${GLYPH[h.job]}</svg>
-      ${owned?`<span class="cown">${owned}/3</span>`:''}
-      <span class="cplate"><span class="cname">${h.name}</span><span class="ctags"><i class="o">${ORIGINS[h.origin].name}</i><i>${JOBS[h.job].name}</i></span></span>`;
+      ${evolves?`<span class="cown evo">Evolves!</span>`:owned?`<span class="cown">${owned}/3</span>`:''}
+      <span class="cplate"><span class="cname">${h.name}</span>${owned||two?`<span class="cnext">→ ${nextName}</span>`:''}<span class="ctags"><i class="o">${ORIGINS[h.origin].name}</i><i>${JOBS[h.job].name}</i></span></span>`;
     b.setAttribute('aria-label',`Tame ${h.name}, ${ORIGINS[h.origin].name} ${JOBS[h.job].name}, ${price(h)} coins`);
     b.addEventListener('click',()=>buy(i));
     shop.append(b);
@@ -3082,6 +3109,24 @@ function openMenu(){
       if(act==='abandon'){Q.length=0;QBUSY=false;newGame();startScreen()}
     });
 }
+// Evolution guide: every beast's three forms side by side, yours first, with how many more copies each needs
+function openEvoGuide(filter){
+  const mine=G?allUnits().map(x=>x.u):[];
+  const have=id=>{const c=[0,0,0,0];mine.filter(u=>u.hero===id).forEach(u=>c[u.star]++);return c};
+  const owned=h=>mine.some(u=>u.hero===h.id);
+  const list=HEROES.filter(h=>filter==='mine'?owned(h):true).sort((a,b)=>(owned(b)-owned(a))||a.cost-b.cost);
+  const row=h=>{const c=have(h.id),top=c[3]?3:c[2]?2:c[1]?1:0;
+    const need=c[2]&&!c[3]?`${3-c[2]>0?3-c[2]:0} more ${h.evo[1]} ★★ to reach ${h.evo[2]}`:c[1]?`${3-c[1]} more ${h.name} ★ to make ${h.evo[1]}`:'';
+    const form=i=>`<div class="ef${top===i+1?' on':top>i+1?' past':''}"><div class="efart" style="--oc:${ORIGINS[h.origin].col};--od:${ORIGINS[h.origin].dark}">${artHTML(h.id,h.job,'full',i+1)}</div><b>${h.evo[i]}</b><span>${'★'.repeat(i+1)}${c[i+1]?` · you have ${c[i+1]}`:''}</span></div>`;
+    return `<div class="erow${owned(h)?' mine':''}"><div class="eforms">${form(0)}<i class="earr">3×<br>→</i>${form(1)}<i class="earr">3×<br>→</i>${form(2)}</div>
+      <p class="emeta"><span>${ORIGINS[h.origin].name} · ${JOBS[h.job].name} · Cost ${h.cost}</span>${need?`<em>${need}</em>`:''}</p></div>`};
+  openModal(`<p class="kick">Guide</p><h2>Evolutions</h2>
+    <p class="egrule">The shop always sells the young <b>★</b> form. Three copies of the same ★ beast merge into its <b>★★</b> form, which has a new name. Three ★★ merge into its final <b>★★★</b> form. Copies on your bench count, and merges happen as soon as you buy the third.</p>
+    ${G&&mine.length?`<div class="tabs"><button class="btn small${filter!=='mine'?' on':''}" data-act="all">All beasts</button><button class="btn small${filter==='mine'?' on':''}" data-act="mine">Yours</button></div>`:''}
+    <div class="elist">${list.map(row).join('')||'<p>You have no beasts yet.</p>'}</div>
+    <div class="row"><button class="btn" data-act="close">Close</button></div>`,
+    act=>{if(act==='all')return openEvoGuide();if(act==='mine')return openEvoGuide('mine');if(act==='close')closeModal()},'evog');
+}
 function openCodex(back,tab='beasts'){
   const tabs=[['beasts','Beasts'],['bonds','Pack bonds'],['boons','Boons'],['items','Items'],['bosses','Bosses'],['ach','Achievements'],['records','Records']];
   const seen=o=>Object.keys(o).length;
@@ -3201,6 +3246,7 @@ $('#battle').onclick=startBattle;
 $('#odbtn').onclick=overdrive;
 $('#track').onclick=viewMap;
 $('#menubtn').onclick=openMenu;
+$('#evobtn').onclick=()=>openEvoGuide();
 $('#sndbtn').onclick=()=>setSound({all:'sfx',sfx:'off',off:'all'}[META.sound]);
 renderSoundBtn();
 $('#info').addEventListener('click',e=>{if(e.target.closest('#sheetx')){G.sel=null;G.selEnemy=null;renderAll()}});
