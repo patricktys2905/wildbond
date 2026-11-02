@@ -722,6 +722,9 @@ body.dragging .sellbar{display:grid}
 .card.evolves{border-color:var(--hp);box-shadow:0 0 0 1px var(--hp),0 0 14px rgba(134,224,122,.55)}
 .cown.evo{animation:pulse 1s infinite;background:var(--hp)}
 @media (max-width:520px){.eforms{gap:4px 6px}.ef b{font-size:10px}.earr{font-size:9px}.cnext{font-size:8.5px}}
+/* beast names in Field Notes size themselves to the column so long one-word names never clip */
+.dmeta{container-type:inline-size}
+.dmeta h3{font-size:clamp(14px,11.5cqi,28px);overflow-wrap:break-word;hyphens:auto}
 </style>
 
 <canvas id="motes" aria-hidden="true"></canvas>
@@ -890,9 +893,9 @@ const BONDS=[
   {a:'lumikirin',b:'rootling',name:'Rootbound Crown',why:'The elder treant sheltered the kirin when it fell from the sky.'},
 ].map(b=>({...b,key:b.a+'-'+b.b}));
 const BOSSES={
-  5:{name:'Blighted Alpha',title:'A pack leader twisted by the creeping Blight',hp:4400,ad:110,as:0.6,armor:30,mana:90,aoe:1,art:'art/bossalpha-1.webp',card:'art/bossalpha-1.jpg'},
+  5:{name:'Blighted Alpha',title:'A pack leader twisted by the creeping Blight',hp:5800,ad:125,as:0.6,armor:30,mana:90,aoe:1,art:'art/bossalpha-1.webp',card:'art/bossalpha-1.jpg'},
   10:{name:'The Thornmaw',title:'An ancient guardian beast choked by black thorns',hp:7000,ad:140,as:0.7,armor:45,mana:80,aoe:1,art:'art/bossthorn-1.webp',card:'art/bossthorn-1.jpg'},
-  15:{name:'Ruinmaw',title:'The Heart of the Blight',hp:11000,ad:185,as:0.75,armor:60,mana:80,aoe:2,art:'art/bossruin-1.webp',card:'art/bossruin-1.jpg'},
+  15:{name:'Ruinmaw',title:'The Heart of the Blight',hp:12000,ad:195,as:0.75,armor:60,mana:80,aoe:2,art:'art/bossruin-1.webp',card:'art/bossruin-1.jpg'},
 };
 const GUILDS=['Thornveil Tamers','The Ashen Pack','Glasswing Club','Saltmoon Rangers','The Quiet Lanterns','Ironbloom Kennel','Starless Herd','Velvet Thunder','Copperleaf Den','The Last Howl','Frostbound Pact','Cobalt Strays'];
 const COST_MUL=[1,1.25,1.55], STAR_MUL=[1,1.8,3.2];
