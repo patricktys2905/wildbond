@@ -865,14 +865,14 @@ const BONDS=[
 const BOSSES={
   5:{name:'Blighted Alpha',title:'A pack leader twisted by the creeping Blight',hp:4400,ad:110,as:0.6,armor:30,mana:90,aoe:1,art:'art/bossalpha-1.webp',card:'art/bossalpha-1.jpg'},
   10:{name:'The Thornmaw',title:'An ancient guardian beast choked by black thorns',hp:7000,ad:140,as:0.7,armor:45,mana:80,aoe:1,art:'art/bossthorn-1.webp',card:'art/bossthorn-1.jpg'},
-  15:{name:'Ruinmaw',title:'The Heart of the Blight',hp:14000,ad:215,as:0.75,armor:60,mana:80,aoe:2,art:'art/bossruin-1.webp',card:'art/bossruin-1.jpg'},
+  15:{name:'Ruinmaw',title:'The Heart of the Blight',hp:11000,ad:185,as:0.75,armor:60,mana:80,aoe:2,art:'art/bossruin-1.webp',card:'art/bossruin-1.jpg'},
 };
 const GUILDS=['Thornveil Tamers','The Ashen Pack','Glasswing Club','Saltmoon Rangers','The Quiet Lanterns','Ironbloom Kennel','Starless Herd','Velvet Thunder','Copperleaf Den','The Last Howl','Frostbound Pact','Cobalt Strays'];
 const COST_MUL=[1,1.25,1.55], STAR_MUL=[1,1.8,3.2];
 const POOL_SIZE={1:18,2:14,3:10};
 const ODDS={1:[1,0,0],2:[1,0,0],3:[.75,.25,0],4:[.55,.37,.08],5:[.42,.4,.18],6:[.32,.4,.28],7:[.22,.4,.38],8:[.15,.37,.48]};
 const XPN={2:2,3:6,4:10,5:20,6:36,7:56};
-const ENEMY_N=[2,3,3,4,4,5,5,5,6,6,6,7,7,8,8];
+const ENEMY_N=[2,3,3,4,4,5,5,5,6,6,6,7,7,7,8];
 const CRYSTAL_ROUNDS=[3,6,9,12];
 const BOON_ROUNDS=[5,10]; // plus one at the start of the run, from elites and from some events
 const MAX_HP=100;
@@ -1736,7 +1736,9 @@ function makeEnemy(){
   const R=G.round, r=Math.min(R,MAX_ROUND), over=R-r, elite=G.node==='elite', rival=G.node==='rival', boss=roundBoss(R);
   const n=Math.min(10,ENEMY_N[r-1]+(elite?1:0)-(boss?(r===MAX_ROUND?2:1):0)); // a boss counts for escorts: two at the finale, one before
   const o=ODDS[Math.min(8,2+Math.ceil(r/2)+(elite?1:0))];
-  const p2=clamp((r-2)*0.06+(elite?0.2:0)+(over?0.2:0),0,0.95), p3=(r>=13?(r-12)*0.06:0)+(elite&&r>=8?0.06:0)+over*0.02;
+  const p2=clamp((r-2)*0.06+(elite?0.2:0)+(over?0.2:0),0,0.95), p3=(r>=13?(r-12)*0.04:0)+(elite&&r>=8?0.06:0)+over*0.02;
+  // a boss brings minions, not champions: its escorts never roll three-stars and fewer are two-stars
+  const q2=boss?Math.min(p2,0.5):p2, q3=boss?0:p3;
   const theme=elite?rnd(Object.keys(ORIGINS)):null, picks=[];
   if(rival){
     const k=Math.min(2,G.rivalMet);
@@ -1745,7 +1747,7 @@ function makeEnemy(){
     const x=RNG(), cost=x<o[0]?1:x<o[0]+o[1]?2:3;
     let pool=HEROES.filter(h=>h.cost===cost);
     if(theme&&RNG()<0.75){const t=pool.filter(h=>h.origin===theme);if(t.length)pool=t}
-    const h=rnd(pool), star=RNG()<p3?3:RNG()<p2?2:1;
+    const h=rnd(pool), star=RNG()<q3?3:RNG()<q2?2:1;
     picks.push({h,star,job:RNG()<Math.min(0.35,r*0.03)?rnd(Object.keys(JOBS)):h.job});
   }
   const units=[], taken=new Set();
