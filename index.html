@@ -37,6 +37,7 @@ body{
   font-family:var(--body);font-size:14px;line-height:1.45;
   background:
     linear-gradient(180deg,rgba(10,13,41,.35),rgba(10,13,41,.78) 55%,var(--night)),
+    url(art/bg.jpg) center top/cover fixed,
 
     var(--night);
 }
@@ -1131,7 +1132,7 @@ const LOOK={
 };
 const ART_FILES={};
 // painted art published next to the page, as "id-star" (art/<id>-<star>.jpg for cards, .webp cut-outs for the board)
-const ART_HAVE=new Set([]);
+const ART_HAVE=new Set(["ashcub-1","ashcub-2","ashcub-3","barkcub-1","barkcub-2","barkcub-3","briarchick-1","briarchick-2","briarchick-3","cinderbull-1","cinderbull-2","cinderbull-3","cinderwhelp-1","cinderwhelp-2","cinderwhelp-3","cragshell-1","cragshell-2","cragshell-3","flickerling-1","flickerling-2","flickerling-3","glimmeel-1","glimmeel-2","glimmeel-3","gloomwing-1","gloomwing-2","gloomwing-3","griffling-1","griffling-2","griffling-3","ironcalf-1","ironcalf-2","ironcalf-3","lumikirin-1","lumikirin-2","lumikirin-3","mossfawn-1","mossfawn-2","mossfawn-3","nightglare-1","nightglare-2","nightglare-3","pebblegarg-1","pebblegarg-2","pebblegarg-3","quartzfoal-1","quartzfoal-2","quartzfoal-3","quillhawk-1","quillhawk-2","quillhawk-3","rockling-1","rockling-2","rockling-3","rootling-1","rootling-2","rootling-3","salamite-1","salamite-2","salamite-3","shadefoal-1","shadefoal-2","shadefoal-3","shadeprowl-1","shadeprowl-2","shadeprowl-3","spinelet-1","spinelet-2","spinelet-3","sproutwolf-1","sproutwolf-2","sproutwolf-3","trillwing-1","trillwing-2","trillwing-3","vinesnake-1","vinesnake-2","vinesnake-3","voltdrake-1","voltdrake-2","voltdrake-3","voltgrub-1","voltgrub-2","voltgrub-3","wispkit-1","wispkit-2","wispkit-3","zephyrling-1","zephyrling-2","zephyrling-3"]);
 const CASUAL=new Set(), SCENE_ART=new Set(), COVER_ART=new Set(), CLIP_ART=new Set();
 const paint=(key,src,alt='')=>CLIP_ART.has(key)&&!fx.reduce?`<video src="art/clip-${key}.mp4" poster="${src}" autoplay muted loop playsinline aria-label="${alt}"></video>`:`<img src="${src}" alt="${alt}">`;
 META.outfit=META.outfit||{};
