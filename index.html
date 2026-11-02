@@ -725,6 +725,12 @@ body.dragging .sellbar{display:grid}
 /* beast names in Field Notes size themselves to the column so long one-word names never clip */
 .dmeta{container-type:inline-size}
 .dmeta h3{font-size:clamp(14px,11.5cqi,28px);overflow-wrap:break-word;hyphens:auto}
+/* Field Notes portrait: a square frame with breathing room, stars in their own strip under the beast */
+.dart{aspect-ratio:1/1}
+.dart .pt.cut{padding:9% 9% 22%}
+.dstar{bottom:0;padding:3px 0 4px;font-size:14px;background:linear-gradient(transparent,rgba(0,0,0,.55) 40%)}
+.cart .pt.cut{padding:6% 6% 10%}
+.gallery .pt.cut{padding:8% 8% 32%}
 </style>
 
 <canvas id="motes" aria-hidden="true"></canvas>
