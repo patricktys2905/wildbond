@@ -311,7 +311,7 @@ canvas.pt{display:block}
 .card.empty{padding-top:0}.card.empty::before{display:none}
 .card::before{content:"";position:absolute;inset:0 0 auto;height:28px;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.35));border-bottom:1px solid rgba(217,199,163,.18)}
 .cart{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;
-  background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--oc) 70%,#fff),var(--oc) 40%,var(--od))}
+  background:radial-gradient(ellipse 60% 22% at 50% 86%,rgba(0,0,0,.55),transparent 70%),radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--oc) 34%,transparent),transparent 62%),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--od) 65%,#1a100b),#0c0907 85%)}
 .cart::after{content:"";position:absolute;inset:auto 0 0;height:30%;background:linear-gradient(transparent,#150e0b)}
 .cart .pt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .cplate{display:grid;gap:1px;padding:2px 4px 7px;margin-top:-10px;position:relative;z-index:1}
@@ -337,7 +337,7 @@ body.dragging .sellbar{display:grid}
 /* ---------- dossier ---------- */
 .dhero{display:grid;grid-template-columns:44% minmax(0,1fr);gap:14px;align-items:center;margin-bottom:8px}
 .dart{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;border:2px solid var(--frame);
-  background:radial-gradient(circle at 50% 30%,var(--oc),var(--od));box-shadow:0 6px 16px rgba(0,0,0,.45)}
+  background:radial-gradient(ellipse 60% 22% at 50% 86%,rgba(0,0,0,.55),transparent 70%),radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--oc) 34%,transparent),transparent 62%),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--od) 65%,#1a100b),#0c0907 85%);box-shadow:0 6px 16px rgba(0,0,0,.45)}
 .dhero.foe .dart{border-color:var(--foe)}
 .dart.boss .pt{object-fit:contain;object-position:50% 100%}
 .dart .pt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 8%}
@@ -403,8 +403,11 @@ body.dragging .sellbar{display:grid}
 .mwin{max-width:720px;width:100%;padding:22px 22px 20px}
 .gallery{display:grid;grid-auto-flow:column;grid-auto-columns:96px;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin:12px 0 4px;scroll-snap-type:x mandatory}
 .gallery figure{margin:0;position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;border:1.5px solid var(--frame);scroll-snap-align:start;
-  background:radial-gradient(circle at 50% 30%,var(--oc),var(--od))}
+  background:radial-gradient(ellipse 60% 22% at 50% 86%,rgba(0,0,0,.55),transparent 70%),radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--oc) 34%,transparent),transparent 62%),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--od) 65%,#1a100b),#0c0907 85%)}
 .gallery .pt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 8%}
+.pt.cut{object-fit:contain!important;object-position:50% 100%!important;padding:8% 5% 12%;filter:drop-shadow(0 5px 6px rgba(0,0,0,.6))}
+.gallery .pt.cut{padding-bottom:30%}
+.cart .pt.cut{padding:3% 2% 9%}
 .gallery figcaption{position:absolute;inset:auto 0 0;padding:16px 6px 5px;font-family:var(--display);font-size:13px;line-height:1.1;
   background:linear-gradient(transparent,rgba(14,10,8,.92))}
 .gallery figcaption span{display:block;font-family:var(--body);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--oc)}
@@ -787,20 +790,20 @@ const COLS=7, ROWS=8, BENCH=9, MAX_ROUND=15, TICK=0.05, TIME_LIMIT=45;
 
 const ORIGINS={
   sky:{name:'Skyborne',col:'#9adcff',dark:'#1f5aa6',th:[2,3],desc:['Skyborne beasts attack 20% faster.','Skyborne beasts attack 45% faster.'],lore:'Storm-riders of the floating isles.'},
-  ember:{name:'Emberclaw',col:'#ffb36b',dark:'#a8361c',th:[2,3],desc:['Attacks deal bonus true damage equal to 3% of the target\'s max HP. Doubled by day.','Bonus true damage rises to 6% of max HP. Doubled by day.'],lore:'Fire-hearted beasts of the volcano rim.'},
-  luna:{name:'Moonveil',col:'#cdbaff',dark:'#4f37a8',th:[2,3],desc:['Moonveil beasts dodge 15% of attacks, 25% at night.','Dodge 25% of attacks (40% at night) and gain mana 50% faster.'],lore:'Night-prowlers of the silver marsh.'},
-  grove:{name:'Wildgrove',col:'#a8e08a',dark:'#2f6b35',th:[2,3],desc:['Wildgrove beasts regenerate 2% of their max HP every second.','Wildgrove beasts regenerate 4% of their max HP every second and have 20% more HP.'],lore:'Ancient forest kin, rooted and patient.'},
+  ember:{name:'Emberclaw',col:'#ffb36b',dark:'#a8361c',th:[2,3],desc:['Attacks deal bonus true damage equal to 2% of the target\'s max HP. Doubled by day.','Bonus true damage rises to 3% of max HP. Doubled by day.'],lore:'Fire-hearted beasts of the volcano rim.'},
+  luna:{name:'Moonveil',col:'#cdbaff',dark:'#4f37a8',th:[2,3],desc:['Moonveil beasts dodge 20% of attacks, 30% at night, and gain mana 20% faster.','Dodge 30% of attacks (45% at night) and gain mana 50% faster.'],lore:'Night-prowlers of the silver marsh.'},
+  grove:{name:'Wildgrove',col:'#a8e08a',dark:'#2f6b35',th:[2,3],desc:['Wildgrove beasts regenerate 3.5% of their max HP every second.','Wildgrove beasts regenerate 5% of their max HP every second and have 20% more HP.'],lore:'Ancient forest kin, rooted and patient.'},
   iron:{name:'Stonehide',col:'#e6dfcc',dark:'#4c5664',th:[2,3],desc:['Stonehide beasts start combat with a shield.','Your whole team starts combat with a shield.'],lore:'Crystal-backed beasts of the deep caverns.'},
 };
 const JOBS={
-  knight:{name:'Guardian',hp:760,ad:48,as:0.65,armor:40,range:1,mana:80,start:20,th:[2,4],spell:'Bulwark',spellDesc:'Gains a shield worth 35% of max HP and stuns adjacent enemies.',desc:['Guardians gain +25 armor.','Guardians gain +60 armor.']},
+  knight:{name:'Guardian',hp:720,ad:48,as:0.65,armor:30,range:1,mana:80,start:20,th:[2,4],spell:'Bulwark',spellDesc:'Gains a shield worth 35% of max HP and stuns adjacent enemies.',desc:['Guardians gain +15 armor.','Guardians gain +40 armor.']},
   bmage:{name:'Elemental',hp:470,ad:38,as:0.7,armor:15,range:3,mana:60,start:10,th:[2,4],spell:'Meteor Burst',spellDesc:'Hurls a blazing meteor at the target that also hits every enemy next to it.',desc:['Abilities deal 35% more damage.','Abilities deal 80% more damage.']},
   wmage:{name:'Soother',hp:510,ad:34,as:0.7,armor:15,range:3,mana:70,start:20,th:[2,4],spell:'Healing Chorus',spellDesc:'Heals the two most wounded allies.',desc:['Heals are 35% stronger.','Heals are 80% stronger.']},
-  ninja:{name:'Stalker',hp:570,ad:60,as:0.9,armor:20,range:1,mana:50,start:0,th:[2,4],spell:'Ambush',spellDesc:'Blinks to the weakest enemy and strikes for 260% damage. Leaps to the enemy backline when combat starts.',desc:['Stalkers gain +20% crit chance.','Stalkers gain +40% crit chance.']},
-  ranger:{name:'Spiker',hp:500,ad:56,as:0.8,armor:15,range:4,mana:70,start:10,th:[2,4],spell:'Piercing Quill',spellDesc:'Fires a quill that passes through the target and hits every enemy in a line behind it for 200% damage.',desc:['Spikers deal 20% more attack damage.','Spikers deal 50% more attack damage.']},
+  ninja:{name:'Stalker',hp:570,ad:52,as:0.9,armor:20,range:1,mana:50,start:0,th:[2,4],spell:'Ambush',spellDesc:'Blinks to the weakest enemy and strikes for 240% damage. Leaps to the enemy backline when combat starts.',desc:['Stalkers gain +15% crit chance.','Stalkers gain +30% crit chance.']},
+  ranger:{name:'Spiker',hp:540,ad:60,as:0.8,armor:15,range:4,mana:70,start:10,th:[2,4],spell:'Piercing Quill',spellDesc:'Fires a quill that passes through the target and hits every enemy in a line behind it for 200% damage.',desc:['Spikers deal 20% more attack damage.','Spikers deal 50% more attack damage.']},
   lancer:{name:'Charger',hp:680,ad:54,as:0.7,armor:30,range:1,mana:70,start:10,th:[2,4],spell:'Crash Pounce',spellDesc:'Leaps high and crashes onto the farthest enemy within 3 squares for 220% damage, splashing 120% to enemies beside it.',desc:['Chargers heal for 15% of the damage they deal.','Chargers heal for 35% of the damage they deal.']},
   summoner:{name:'Packcaller',hp:540,ad:36,as:0.7,armor:15,range:3,mana:70,start:20,th:[2,4],spell:'Call the Pack',spellDesc:'Calls a glowing wisp pup beside it that fights until it falls. It can keep two pups at once.',desc:['Pups are 40% stronger.','Pups are twice as strong, and every Packcaller calls one when combat starts.']},
-  bard:{name:'Howler',hp:520,ad:36,as:0.7,armor:15,range:3,mana:80,start:30,th:[2,4],spell:'Rallying Howl',spellDesc:'Allies within 2 squares attack 40% faster for 4 seconds and gain 20 mana.',desc:['Your whole team starts combat with +15 mana.','Your whole team starts combat with +35 mana.']},
+  bard:{name:'Howler',hp:520,ad:36,as:0.7,armor:15,range:3,mana:80,start:30,th:[2,4],spell:'Rallying Howl',spellDesc:'Allies within 2 squares attack 50% faster for 5 seconds and gain 20 mana.',desc:['Your whole team starts combat with +15 mana.','Your whole team starts combat with +35 mana.']},
 };
 // each beast has three forms: ★ is the young form, ★★ and ★★★ are its evolutions
 const HEROES=[
@@ -855,9 +858,9 @@ const BONDS=[
   {a:'lumikirin',b:'rootling',name:'Rootbound Crown',why:'The elder treant sheltered the kirin when it fell from the sky.'},
 ].map(b=>({...b,key:b.a+'-'+b.b}));
 const BOSSES={
-  5:{name:'Blighted Alpha',title:'A pack leader twisted by the creeping Blight',hp:2600,ad:85,as:0.6,armor:30,mana:90,aoe:1,art:'art/bossalpha-1.webp',card:'art/bossalpha-1.jpg'},
-  10:{name:'The Thornmaw',title:'An ancient guardian beast choked by black thorns',hp:4600,ad:120,as:0.7,armor:45,mana:80,aoe:1,art:'art/bossthorn-1.webp',card:'art/bossthorn-1.jpg'},
-  15:{name:'Ruinmaw',title:'The Heart of the Blight',hp:8500,ad:165,as:0.75,armor:60,mana:80,aoe:2,art:'art/bossruin-1.webp',card:'art/bossruin-1.jpg'},
+  5:{name:'Blighted Alpha',title:'A pack leader twisted by the creeping Blight',hp:4400,ad:110,as:0.6,armor:30,mana:90,aoe:1,art:'art/bossalpha-1.webp',card:'art/bossalpha-1.jpg'},
+  10:{name:'The Thornmaw',title:'An ancient guardian beast choked by black thorns',hp:7000,ad:140,as:0.7,armor:45,mana:80,aoe:1,art:'art/bossthorn-1.webp',card:'art/bossthorn-1.jpg'},
+  15:{name:'Ruinmaw',title:'The Heart of the Blight',hp:14000,ad:215,as:0.75,armor:60,mana:80,aoe:2,art:'art/bossruin-1.webp',card:'art/bossruin-1.jpg'},
 };
 const GUILDS=['Thornveil Tamers','The Ashen Pack','Glasswing Club','Saltmoon Rangers','The Quiet Lanterns','Ironbloom Kennel','Starless Herd','Velvet Thunder','Copperleaf Den','The Last Howl','Frostbound Pact','Cobalt Strays'];
 const COST_MUL=[1,1.25,1.55], STAR_MUL=[1,1.8,3.2];
@@ -1327,7 +1330,7 @@ function bossSVG(){
 function artHTML(id,job,mode='face',star=1){
   if(CUSTOM_ART[id])return `<img class="pt" src="${CUSTOM_ART[id]}" alt="">`;
   if(!ART_HAVE.has(id+'-'+star))return creatureSVG(id,star,'top');
-  return `<img class="pt full" src="art/${id}-${star}.jpg" alt="" loading="lazy">`;
+  return `<img class="pt full cut" src="art/${id}-${star}.webp" alt="" loading="lazy">`;
 }
 function setCustomArt(id,file){
   if(!file||!file.type.startsWith('image/'))return toast('Choose an image file.');
@@ -1649,15 +1652,15 @@ function makeEntity(u,side,c,r,tr,night){
     maxHp:s.hp,hp:s.hp,ad:s.ad,as:s.as,armor:s.armor,range:s.range,mana:s.start,maxMana:s.mana,c,r,rx:c,ry:r,unit:u});
   const ot=tr[h.origin].tier, jt=tr[u.job].tier;
   if(h.origin==='sky')e.as*=[1,1.2,1.45][ot];
-  if(h.origin==='ember')e.emberPct=[0,0.03,0.06][ot]*(night?1:2);
-  if(h.origin==='luna'){e.dodge=(night?[0,0.25,0.4]:[0,0.15,0.25])[ot];if(ot===2)e.manaMul=1.5}
-  if(u.job==='knight')e.armor+=[0,25,60][jt];
+  if(h.origin==='ember')e.emberPct=[0,0.02,0.03][ot]*(night?1:2);
+  if(h.origin==='luna'){e.dodge=(night?[0,0.3,0.45]:[0,0.2,0.3])[ot];e.manaMul=[1,1.2,1.5][ot]}
+  if(u.job==='knight')e.armor+=[0,15,40][jt];
   if(u.job==='bmage')e.spMul=[1,1.35,1.8][jt];
   if(u.job==='wmage')e.healMul=[1,1.35,1.8][jt];
-  if(u.job==='ninja')e.crit+=[0,0.2,0.4][jt];
+  if(u.job==='ninja')e.crit+=[0,0.15,0.3][jt];
   if(u.job==='ranger')e.ad=Math.round(e.ad*[1,1.2,1.5][jt]);
   if(u.job==='lancer')e.lifesteal=[0,0.15,0.35][jt];
-  if(h.origin==='grove'){e.regen+=[0,0.02,0.04][ot];if(ot===2)e.maxHp=e.hp=Math.round(e.maxHp*1.2)}
+  if(h.origin==='grove'){e.regen+=[0,0.035,0.05][ot];if(ot===2)e.maxHp=e.hp=Math.round(e.maxHp*1.2)}
   if(u.job==='summoner'){e.spiritMul=[1,1.4,2][jt];e.callAtStart=jt===2}
   if(side===0)G.boons.forEach(k=>BOONS[k].ent&&BOONS[k].ent(e,night,tr));
   applyItems(e,u.items);
@@ -1673,7 +1676,7 @@ function summonSpirit(e){
   const fwd=e.side===0?-1:1;opts.sort((a,b)=>(a.r-b.r)*fwd*-1);
   const m=e.spiritMul||1, p=opts[0], sp=baseEnt();
   Object.assign(sp,{side:e.side,spirit:true,owner:e,name:'Wisp Pup',job:'spirit',origin:e.origin,star:0,power:e.power*m,
-    maxHp:Math.round(e.maxHp*0.55*m),hp:Math.round(e.maxHp*0.55*m),ad:Math.round(e.ad*1.1*m),as:0.85,armor:20,range:1,mana:0,maxMana:99999,
+    maxHp:Math.round(e.maxHp*0.65*m),hp:Math.round(e.maxHp*0.65*m),ad:Math.round(e.ad*1.1*m),as:0.85,armor:20,range:1,mana:0,maxMana:99999,
     c:p.c,r:p.r,rx:p.c,ry:p.r,cd:0.4});
   addEnt(sp);
   if(S.built)spiritToken(sp);
@@ -1890,7 +1893,7 @@ function cast(e,t){
       floatText(e,'Meteor Burst','spell');break;}
     case 'wmage':{
       const hurt=allies(e).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp).slice(0,2);
-      hurt.forEach(a=>{heal(a,190*e.power*e.healMul);fx.heal(a)});
+      hurt.forEach(a=>{heal(a,280*e.power*e.healMul);fx.heal(a)});
       floatText(e,'Healing Chorus','spell');break;}
     case 'ninja':{
       const weak=foes(e).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0]||t;
@@ -1898,7 +1901,7 @@ function cast(e,t){
       landNear(e,weak);e.target=weak;
       requestAnimationFrame(()=>{fx.smoke(e);fx.cross(weak,'#c3a3ff')});
       const crit=Math.random()<e.crit;
-      deal(weak,e.ad*2.6*(crit?e.critMul:1),e,{crit});
+      deal(weak,e.ad*2.4*(crit?e.critMul:1),e,{crit});
       fx.shake(4,160);
       floatText(e,'Ambush','spell');break;}
     case 'ranger':{
@@ -1926,7 +1929,7 @@ function cast(e,t){
     case 'bard':{
       const near=allies(e).filter(a=>cheb(e,a)<=2);
       fx.notes(e);
-      near.forEach(a=>{a.asBuff=Math.max(a.asBuff,1.4);a.asBuffUntil=Math.max(a.asBuffUntil,S.t+4);if(a!==e)gainMana(a,20);fx.heal(a,'#ffd36b')});
+      near.forEach(a=>{a.asBuff=Math.max(a.asBuff,1.5);a.asBuffUntil=Math.max(a.asBuffUntil,S.t+5);if(a!==e)gainMana(a,20);fx.heal(a,'#ffd36b')});
       floatText(e,'Rallying Howl','spell');break;}
     case 'summoner':
       summonSpirit(e);
@@ -2661,7 +2664,7 @@ function renderInfo(){
       const b=x.boss;
       box.innerHTML=`${SHEETX}<h2><span class="gold">Scouting Report</span></h2>
         <div class="dhero foe" style="--oc:#c79bff;--od:#1d0b33">
-          <div class="dart boss">${b.card?`<img class="pt" src="${b.card}" alt="" style="object-fit:cover;object-position:50% 50%${b.tint?`;filter:${b.tint}`:''}">`:bossSVG()}</div>
+          <div class="dart boss">${b.card?`<img class="pt cut" src="${b.art}" alt="" style="${b.tint?`;filter:${b.tint}`:''}">`:bossSVG()}</div>
           <div class="dmeta"><p class="kicker">Boss · Blighted</p><h3>${b.name}</h3><p>${b.title}</p></div></div>
         ${statBlock({hp:b.hp,ad:b.ad,as:b.as,armor:b.armor,range:1,mana:b.mana})}
         <div class="ability"><div class="an"><svg viewBox="0 0 24 24">${GLYPH['boss']}</svg>Blight Roar<em>${b.mana} MANA</em></div><p>Hits and stuns every beast within ${b.aoe} square${b.aoe>1?'s':''} of it.</p></div>`;
@@ -2960,7 +2963,7 @@ function openCodex(back,tab='beasts'){
     <div class="clist">${COMP_KEYS.map(k=>`<div>${itemIcon(k)}<span class="grow"><b>${COMP[k].name}</b>${COMP[k].desc}</span></div>`).join('')}</div>
     <div class="clist">${Object.entries(FUSED).map(([k,f])=>{const [a,b]=k.split('+');return `<div>${itemIcon(k)}<span class="grow"><b>${f.name}</b>${COMP[a].name} + ${COMP[b].name}. ${f.desc}</span></div>`}).join('')}</div>`;
   if(tab==='bosses')body=`<div class="clist">${Object.entries(BOSSES).map(([r,b])=>{const k=META.bosses[b.name];
-    return `<div class="${k?'':'off'}">${b.card?`<img class="bimg" src="${b.card}" alt="">`:`<span class="bimg">${bossSVG()}</span>`}<span class="grow"><b>${k?b.name:'???'}</b>${k?`${b.title}. Guards round ${r}.`:`Defeat the boss of round ${r} to record it.`}</span></div>`}).join('')}</div>`;
+    return `<div class="${k?'':'off'}">${b.card?`<img class="bimg" src="${b.art}" alt="" style="object-fit:contain;background:radial-gradient(circle,#3a1d4a,#0c0907)">`:`<span class="bimg">${bossSVG()}</span>`}<span class="grow"><b>${k?b.name:'???'}</b>${k?`${b.title}. Guards round ${r}.`:`Defeat the boss of round ${r} to record it.`}</span></div>`}).join('')}</div>`;
   if(tab==='ach')body=`<p>${seen(META.ach)} of ${Object.keys(ACH).length} unlocked.</p><div class="clist">${Object.entries(ACH).map(([k,[n,d]])=>
     `<div class="${META.ach[k]?'':'off'}"><svg viewBox="0 0 24 24">${GLYPH.bmage}</svg><span class="grow"><b>${n}</b>${d}</span></div>`).join('')}</div>`;
   if(tab==='records'){const dd=META.daily[todayKey()];
